@@ -2,42 +2,52 @@
 
 bold=$(tput bold)
 normal=$(tput sgr0)
+outfile="/c/tmp/git-health.html"
 
 #Make sure this folder is a valid git repo
 if [ ! -d ./.git ]; then
-    echo "Directory is not a valid git repo, exiting"
+    printf "Directory is not a valid git repo, exiting"
     exit 0
 fi
 
-echo "${bold}Checking the repo now..."
+printf "Checking the repo now...\n"
 
 #grab the current branch
-branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+originalBranch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 
 #checkout develop and git latest locally
 git checkout develop --quiet  && git pull --quiet
 
 #check the merged remote branches
-echo "${bold}Remote branches that have already been merged into develop...${normal}"
-printf "${bold}***********************************************************************\n"
-for branch in `git branch -a --merged | cut -c 3- | grep -v HEAD | grep -v "origin/develop"`; do echo -e `git show --format="%ci %cr %an" $branch | head -n 1` \\t$branch; done
+printf "Remote branches that have already been merged into develop.\n"
+printf "***********************************************************************\n"
+for branch in `git branch -r --merged | cut -c 3- | grep -v HEAD | grep -v "origin/develop"`; do echo -e `git show --format="%ci %cr %an" $branch | head -n 1` \\t$branch | sort -r; done
 printf "\n"
 
 
-echo "${bold}Remote branches that have already NOT been merged into develop...${normal}"
-printf "${bold}***********************************************************************\n"
-for branch in `git branch -a --no-merged | cut -c 3- | grep -v HEAD`; do echo -e `git show --format="%ci %cr %an" $branch | head -n 1` \\t$branch; done
-
+printf "Remote branches that have already NOT been merged into develop.\n"
+printf "***********************************************************************\n"
+for branch in `git branch -r --no-merged | cut -c 3- | grep -v HEAD | grep -v "origin/develop"`; do echo -e `git show --format="%ci %cr %an" $branch | head -n 1` \\t$branch; done
 printf "\n"
-printf "${bold}Branches behind develop\n"
-printf "${bold}Branch Name \t Commits behind develop\n${normal}"
-printf "${bold}***********************************************************************\n"
+
+
+printf "Branches behind develop\n"
+printf "Branch Name \t Commits behind develop\n"
+printf "***********************************************************************\n"
 for branch in `git branch -a | grep -v HEAD | grep -v develop | cut -c 3- | sed "s/remotes//" | sed "s/\/origin/origin/"`; do
     countBehind=$(git rev-list $branch..develop --count)
     printf "$branch \t $countBehind\n"
 done
-
 printf "\n"
-printf "${bold}Commits messages that don't include the Jira ticket and/or branch name\n"
-printf "${bold}***********************************************************************\n"
+
+
+printf "Commits messages that don't include the Jira ticket and/or branch name\n"
+printf "***********************************************************************\n"
 git log --all --pretty=format:"%h, %an, %ar, %s" | grep -v "Merg" | grep -ve \w*[A-Z]\w*[A-Z]\w*
+printf "\n"
+
+#move back to the original branch
+git checkout $originalBranch --quiet
+
+printf "Done"
+
