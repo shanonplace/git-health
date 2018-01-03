@@ -77,7 +77,7 @@ printf "\n"
 
 printf "Commits messages that don't include the Jira ticket and/or branch name\n"
 printf "*********************************************************************************************************\n"
-#git log --all --pretty=format:"%h, %an, %ar, %s" | grep -v "Merg" | grep -ve \w*[A-Z]\w*[A-Z]\w*
+git log --all --pretty=format:"%h, %an, %ar, %s" | grep -v "Merg" | grep -ve \w*[A-Z]\w*[A-Z]\w*
 printf "\n"
 
 printf "\n"
