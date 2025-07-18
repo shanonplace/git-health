@@ -11,6 +11,3 @@
 Assuming you have VSCode installed, otherwise replace with you editor of choice
 
 `/c/Projects/git-health/git-health.sh | tee /c/tmp/git-results.txt && code /c/tmp/git-results.txt`
-
-Shanon Place
-shanon.place@verndale.com
